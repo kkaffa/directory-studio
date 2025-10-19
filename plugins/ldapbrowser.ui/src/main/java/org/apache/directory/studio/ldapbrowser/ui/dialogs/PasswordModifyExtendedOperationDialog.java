@@ -139,7 +139,7 @@ public class PasswordModifyExtendedOperationDialog extends Dialog
             }
             ExtendedOperationRunnable runnable = new ExtendedOperationRunnable( connection, request );
 
-            // Execute extended operations
+            // Execute 
             ProgressMonitorDialog dialog = new ProgressMonitorDialog( getShell() );
             IStatus status = RunnableContextRunner.execute( runnable, dialog, true );
 

@@ -43,7 +43,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 
 
 /**
- * Tests the extended operations.
+ * Tests the .
  *
  * @author <a href="mailto:dev@directory.apache.org">Apache Directory Project</a>
  * @version $Rev$, $Date$

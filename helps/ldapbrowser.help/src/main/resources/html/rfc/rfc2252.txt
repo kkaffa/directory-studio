@@ -776,7 +776,7 @@ RFC 2252                   LADPv3 Attributes               December 1997
 5.2.3. supportedExtension
 
    The values of this attribute are OBJECT IDENTIFIERs identifying the
-   supported extended operations which the server supports.
+   supported  which the server supports.
 
    If the server does not support any extensions this attribute will be
    absent.

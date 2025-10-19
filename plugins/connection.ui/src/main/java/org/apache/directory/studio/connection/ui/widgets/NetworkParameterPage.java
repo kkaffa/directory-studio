@@ -20,7 +20,6 @@
 
 package org.apache.directory.studio.connection.ui.widgets;
 
-
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
@@ -65,7 +64,6 @@ import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 
-
 /**
  * The NetworkParameterPage is used the edit the network parameters of a
  * connection. This is a tab in the connection property widget :
@@ -98,568 +96,492 @@ import org.eclipse.ui.dialogs.PreferencesUtil;
  * +---------------------------------------------------------------------------+
  * </pre>
  *
- * @author <a href="mailto:dev@directory.apache.org">Apache Directory Project</a>
+ * @author <a href="mailto:dev@directory.apache.org">Apache Directory
+ *         Project</a>
  */
-public class NetworkParameterPage extends AbstractConnectionParameterPage
-{
-    private static final String X_CONNECTION_NAME = "X-CONNECTION-NAME"; //$NON-NLS-1$
-
-    private static final String X_ENCRYPTION = "X-ENCRYPTION"; //$NON-NLS-1$
-
-    private static final String X_ENCRYPTION_LDAPS = "ldaps"; //$NON-NLS-1$
-
-    private static final String X_ENCRYPTION_START_TLS = "StartTLS"; //$NON-NLS-1$
-
-    /** The connection name text widget */
-    private Text nameText;
-
-    /** The host name combo with the history of recently used host names */
-    private Combo hostCombo;
-
-    /** The host combo with the history of recently used ports */
-    private Combo portCombo;
-
-    /** The combo to select the encryption method */
-    private Combo encryptionMethodCombo;
-
-    /** The button to fetch and show the server's certificate */
-    private Button viewServerCertificateButton;
-
-    /** The button to check the connection parameters */
-    private Button checkConnectionButton;
-
-    /** The checkbox to make the connection read-only */
-    private Button readOnlyConnectionCheckbox;
-
-    /** A timeout for the connection. Default to 30s */
-    private Text timeoutSecondsText;
-
-    /**
-     * A listener for the Link data widget. It will open the CertificateValidationPreference dialog.
-     */
-    private SelectionAdapter linkDataWidgetListener = new SelectionAdapter()
-    {
-        @Override
-        public void widgetSelected( SelectionEvent event )
-        {
-            String certificateValidationPreferencePageId = ConnectionUIPlugin.getDefault()
-                .getPluginProperties().getString( "PrefPage_CertificateValidationPreferencePage_id" ); //$NON-NLS-1$
-
-            PreferenceDialog dialog = PreferencesUtil.createPreferenceDialogOn( Display.getDefault()
-                .getActiveShell(), certificateValidationPreferencePageId, new String[]
-                { certificateValidationPreferencePageId }, null );
-            dialog.open();
-        }
-    };
-
-
-    /**
-     * Gets the connection name.
-     *
-     * @return the connectio name
-     */
-    private String getName()
-    {
-        return nameText.getText();
-    }
-
-
-    /**
-     * Gets the host name.
-     *
-     * @return the host name
-     */
-    private String getHostName()
-    {
-        return hostCombo.getText();
-    }
-
-
-    /**
-     * Gets the port.
-     *
-     * @return the port
-     */
-    private int getPort()
-    {
-        return Integer.parseInt( portCombo.getText() );
-    }
-
-
-    /**
-     * Gets the timeout in seconds.
-     *
-     * @return The timeout in seconds
-     */
-    private int getTimeoutSeconds()
-    {
-        String timeoutSecondsString = timeoutSecondsText.getText();
-
-        if ( Strings.isEmpty( timeoutSecondsString ) )
-        {
-            return 30;
-        }
-        else
-        {
-            return Integer.parseInt( timeoutSecondsString );
-        }
-    }
-
-
-    /**
-     * Gets the encyrption method.
-     *
-     * @return the encyrption method
-     */
-    private ConnectionParameter.EncryptionMethod getEncyrptionMethod()
-    {
-        switch ( encryptionMethodCombo.getSelectionIndex() )
-        {
-            case 1:
-                return ConnectionParameter.EncryptionMethod.LDAPS;
-
-            case 2:
-                return ConnectionParameter.EncryptionMethod.START_TLS;
-
-            default:
-                return ConnectionParameter.EncryptionMethod.NONE;
-        }
-    }
-
-
-    /**
-     * Gets a temporary connection with all connection parameter
-     * entered in this page.
-     *
-     * @return a test connection
-     */
-    private Connection getTestConnection()
-    {
-        ConnectionParameter connectionParameter = new ConnectionParameter( null, getHostName(), getPort(),
-            getEncyrptionMethod(), ConnectionParameter.AuthenticationMethod.NONE, null, null, null, true, null,
-            30000L );
-
-        return new Connection( connectionParameter );
-    }
-
-
-    /**
-     * Gets read only flag.
-     *
-     * @return the read only flag
-     */
-    private boolean isReadOnly()
-    {
-        return readOnlyConnectionCheckbox.getSelection();
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-	protected void createComposite( Composite parent )
-    {
-        Composite composite = BaseWidgetUtils.createColumnContainer( parent, 1, 1 );
-
-        Composite nameComposite = BaseWidgetUtils.createColumnContainer( composite, 2, 1 );
-        BaseWidgetUtils.createLabel( nameComposite, Messages.getString( "NetworkParameterPage.ConnectionName" ), 1 ); //$NON-NLS-1$
-        nameText = BaseWidgetUtils.createText( nameComposite, StringUtils.EMPTY, 1 ); //$NON-NLS-1$
-
-        BaseWidgetUtils.createSpacer( composite, 1 );
-
-        Group group = BaseWidgetUtils.createGroup( composite, Messages
-            .getString( "NetworkParameterPage.NetworkParameter" ), 1 ); //$NON-NLS-1$
-
-        IDialogSettings dialogSettings = ConnectionUIPlugin.getDefault().getDialogSettings();
-
-        // The network hostname
-        Composite groupComposite = BaseWidgetUtils.createColumnContainer( group, 3, 1 );
-        BaseWidgetUtils.createLabel( groupComposite, Messages.getString( "NetworkParameterPage.HostName" ), 1 ); //$NON-NLS-1$
-        String[] hostHistory = HistoryUtils.load( dialogSettings,
-            ConnectionUIConstants.DIALOGSETTING_KEY_HOST_HISTORY );
-        hostCombo = BaseWidgetUtils.createCombo( groupComposite, hostHistory, -1, 2 );
-
-        // The network port
-        BaseWidgetUtils.createLabel( groupComposite, Messages.getString( "NetworkParameterPage.Port" ), 1 ); //$NON-NLS-1$
-        String[] portHistory = HistoryUtils.load( dialogSettings,
-            ConnectionUIConstants.DIALOGSETTING_KEY_PORT_HISTORY );
-        portCombo = BaseWidgetUtils.createCombo( groupComposite, portHistory, -1, 2 );
-        portCombo.setTextLimit( 5 );
-        portCombo.setText( "389" ); //$NON-NLS-1$
-
-        // The timeout
-        BaseWidgetUtils.createLabel( groupComposite, Messages.getString( "NetworkParameterPage.Timeout" ), 2 ); //$NON-NLS-1$
-        timeoutSecondsText = BaseWidgetUtils.createText( groupComposite, "30", 1 ); //$NON-NLS-1$
-        timeoutSecondsText.setTextLimit( 7 );
-
-        String[] encMethods = new String[]
-            {
-                Messages.getString( "NetworkParameterPage.NoEncryption" ), //$NON-NLS-1$
-                Messages.getString( "NetworkParameterPage.UseSSLEncryption" ), //$NON-NLS-1$
-                Messages.getString( "NetworkParameterPage.UseStartTLS" ) //$NON-NLS-1$
-            };
-
-        BaseWidgetUtils.createLabel( groupComposite, Messages.getString( "NetworkParameterPage.EncryptionMethod" ), 1 ); //$NON-NLS-1$
-        encryptionMethodCombo = BaseWidgetUtils.createReadonlyCombo( groupComposite, encMethods, 0, 2 );
-
-        boolean validateCertificates = ConnectionCorePlugin.getDefault().getPluginPreferences().getBoolean(
-            ConnectionCoreConstants.PREFERENCE_VALIDATE_CERTIFICATES );
-
-        if ( validateCertificates )
-        {
-            BaseWidgetUtils.createSpacer( groupComposite, 1 );
-
-            Link link = BaseWidgetUtils.createLink( groupComposite,
-                Messages.getString( "NetworkParameterPage.CertificateValidationLink" ), 2 ); //$NON-NLS-1$
-            GridData linkGridData = new GridData( GridData.FILL_HORIZONTAL );
-            linkGridData.horizontalSpan = 2;
-            linkGridData.widthHint = 100;
-            link.setLayoutData( linkGridData );
-            link.addSelectionListener( linkDataWidgetListener );
-        }
-        else
-        {
-            BaseWidgetUtils.createSpacer( groupComposite, 1 );
-            BaseWidgetUtils.createLabel( groupComposite, Messages
-                .getString( "NetworkParameterPage.WarningCertificateValidation" ), 2 ); //$NON-NLS-1$
-        }
-
-        BaseWidgetUtils.createSpacer( groupComposite, 1 );
-        GridData gridData = new GridData();
-        gridData.horizontalAlignment = SWT.RIGHT;
-        gridData.verticalAlignment = SWT.BOTTOM;
-        viewServerCertificateButton = new Button( groupComposite, SWT.PUSH );
-        viewServerCertificateButton.setLayoutData( gridData );
-        viewServerCertificateButton.setText( Messages.getString( "NetworkParameterPage.ViewCertificate" ) ); //$NON-NLS-1$
-        checkConnectionButton = new Button( groupComposite, SWT.PUSH );
-        checkConnectionButton.setLayoutData( gridData );
-        checkConnectionButton.setText( Messages.getString( "NetworkParameterPage.CheckNetworkParameter" ) ); //$NON-NLS-1$
-
-        readOnlyConnectionCheckbox = BaseWidgetUtils.createCheckbox( composite,
-            Messages.getString( "NetworkParameterPage.ReadOnly" ), 1 ); //$NON-NLS-1$
-
-        BaseWidgetUtils.createSpacer( composite, 1 );
-        nameText.setFocus();
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-	protected void validate()
-    {
-        // set enabled/disabled state of check connection button
-        checkConnectionButton.setEnabled( !hostCombo.getText().equals( StringUtils.EMPTY ) &&
-            !portCombo.getText().equals( StringUtils.EMPTY ) );
-
-        // set enabled/disabled state of show server certificate button
-        viewServerCertificateButton.setEnabled( checkConnectionButton.isEnabled()
-            && getEncyrptionMethod() != EncryptionMethod.NONE );
-
-        // validate input fields
-        message = null;
-        infoMessage = null;
-        errorMessage = null;
-
-        if ( Strings.isEmpty( portCombo.getText() ) ) //$NON-NLS-1$
-        {
-            message = Messages.getString( "NetworkParameterPage.PleaseEnterPort" ); //$NON-NLS-1$
-        }
-
-        if ( Strings.isEmpty( hostCombo.getText() ) ) //$NON-NLS-1$
-        {
-            message = Messages.getString( "NetworkParameterPage.PleaseEnterHostname" ); //$NON-NLS-1$
-        }
-
-        if ( Strings.isEmpty( nameText.getText() ) ) //$NON-NLS-1$
-        {
-            message = Messages.getString( "NetworkParameterPage.PleaseEnterConnectionName" ); //$NON-NLS-1$
-        }
-
-        if ( Strings.isEmpty( timeoutSecondsText.getText() ) ) //$NON-NLS-1$
-        {
-            timeoutSecondsText.setText( "30" );
-        }
-
-        if ( ConnectionCorePlugin.getDefault().getConnectionManager().getConnectionByName( nameText.getText() ) != null
-            && ( ( connectionParameter == null ) || !nameText.getText().equals( connectionParameter.getName() ) ) )
-        {
-            errorMessage = NLS.bind(
-                Messages.getString( "NetworkParameterPage.ConnectionExists" ), new String[] //$NON-NLS-1$
-                { nameText.getText() } );
-        }
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-	protected void loadParameters( ConnectionParameter parameter )
-    {
-        connectionParameter = parameter;
-
-        nameText.setText( CommonUIUtils.getTextValue( parameter.getName() ) );
-        hostCombo.setText( CommonUIUtils.getTextValue( parameter.getHost() ) );
-        portCombo.setText( Integer.toString( parameter.getPort() ) );
-        int encryptionMethodIndex = 0;
-
-        if ( parameter.getEncryptionMethod() == EncryptionMethod.LDAPS )
-        {
-            encryptionMethodIndex = 1;
-        }
-        else if ( parameter.getEncryptionMethod() == EncryptionMethod.START_TLS )
-        {
-            encryptionMethodIndex = 2;
-        }
-
-        encryptionMethodCombo.select( encryptionMethodIndex );
-        readOnlyConnectionCheckbox.setSelection( parameter.isReadOnly() );
-        timeoutSecondsText.setText( Long.toString( parameter.getTimeoutMillis() / 1000L ) );
-
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-	protected void initListeners()
-    {
-        nameText.addModifyListener( event -> connectionPageModified() );
-
-        hostCombo.addModifyListener( event -> connectionPageModified() );
-
-        portCombo.addVerifyListener( event -> {
-            if ( !event.text.matches( "[0-9]*" ) ) //$NON-NLS-1$
-            {
-                event.doit = false;
-            }
-        } );
-
-        portCombo.addModifyListener( event -> connectionPageModified() );
-
-        encryptionMethodCombo.addSelectionListener( new SelectionAdapter()
-        {
-            /**
-             * {@inheritDoc}
-             */
-            @Override
-            public void widgetSelected( SelectionEvent event )
-            {
-                connectionPageModified();
-            }
-        } );
-
-        checkConnectionButton.addSelectionListener( new SelectionAdapter()
-        {
-            /**
-             * {@inheritDoc}
-             */
-            @Override
-            public void widgetSelected( SelectionEvent event )
-            {
-                Connection connection = getTestConnection();
-                CheckNetworkParameterRunnable runnable = new CheckNetworkParameterRunnable( connection );
-                IStatus status = RunnableContextRunner.execute( runnable, runnableContext, true );
-
-                if ( status.isOK() )
-                {
-                    String title = Messages.getString( "NetworkParameterPage.CheckNetworkParameter" ); //$NON-NLS-1$
-                    String message = Messages.getString( "NetworkParameterPage.ConnectionEstablished" ); //$NON-NLS-1$
-
-                    SSLSession sslSession = runnable.getSslSession();
-                    if ( sslSession != null )
-                    {
-                        message += "\n\nProtocol: " + sslSession.getProtocol();
-                        message += "\nCipher Suite: " + sslSession.getCipherSuite();
-                    }
-                    MessageDialog.openInformation( Display.getDefault().getActiveShell(), title, message );
-                }
-            }
-        } );
-
-        viewServerCertificateButton.addSelectionListener( new SelectionAdapter()
-        {
-            @Override
-            public void widgetSelected( SelectionEvent event )
-            {
-                Connection connection = getTestConnection();
-                CheckNetworkParameterRunnable runnable = new CheckNetworkParameterRunnable( connection );
-                IStatus status = RunnableContextRunner.execute( runnable, runnableContext, true );
-
-                if ( status.isOK() )
-                {
-                    try
-                    {
-                        SSLSession sslSession = runnable.getSslSession();
-                        Certificate[] certificates = sslSession.getPeerCertificates();
-                        X509Certificate[] serverCertificates = new X509Certificate[certificates.length];
-                        for ( int i = 0; i < certificates.length; i++ )
-                        {
-                            serverCertificates[i] = ( X509Certificate ) certificates[i];
-                        }
-                        new CertificateInfoDialog( Display.getDefault().getActiveShell(), serverCertificates ).open();
-                    }
-                    catch ( SSLPeerUnverifiedException e )
-                    {
-                        throw new RuntimeException( e );
-                    }
-                }
-            }
-        } );
-
-        readOnlyConnectionCheckbox.addSelectionListener( new SelectionAdapter()
-        {
-            /**
-             * {@inheritDoc}
-             */
-            @Override
-            public void widgetSelected( SelectionEvent event )
-            {
-                connectionPageModified();
-            }
-        } );
-
-        // The timeout events
-        timeoutSecondsText.addModifyListener( event -> connectionPageModified() );
-
-        timeoutSecondsText.addVerifyListener( event -> {
-            if ( !event.text.matches( "[0-9]*" ) ) //$NON-NLS-1$
-            {
-                event.doit = false;
-            }
-        } );
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-	public void saveParameters( ConnectionParameter parameter )
-    {
-        parameter.setName( getName() );
-        parameter.setHost( getHostName() );
-        parameter.setPort( getPort() );
-        parameter.setEncryptionMethod( getEncyrptionMethod() );
-        parameter.setReadOnly( isReadOnly() );
-        parameter.setTimeoutMillis( getTimeoutSeconds() * 1000L );
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-	public void saveDialogSettings()
-    {
-        IDialogSettings dialogSettings = ConnectionUIPlugin.getDefault().getDialogSettings();
-        HistoryUtils.save( dialogSettings, ConnectionUIConstants.DIALOGSETTING_KEY_HOST_HISTORY, hostCombo.getText() );
-        HistoryUtils.save( dialogSettings, ConnectionUIConstants.DIALOGSETTING_KEY_PORT_HISTORY, portCombo.getText() );
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-	public void setFocus()
-    {
-        nameText.setFocus();
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-	public boolean areParametersModifed()
-    {
-        return isReconnectionRequired() || !StringUtils.equals( connectionParameter.getName(), getName() );
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-	public boolean isReconnectionRequired()
-    {
-        return ( connectionParameter == null )
-            || ( !StringUtils.equals( connectionParameter.getHost(), getHostName() ) )
-            || ( connectionParameter.getPort() != getPort() )
-            || ( connectionParameter.getEncryptionMethod() != getEncyrptionMethod() )
-            || ( connectionParameter.isReadOnly() != isReadOnly() )
-            || ( connectionParameter.getTimeoutMillis() != getTimeoutSeconds() * 1000L );
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-	public void mergeParametersToLdapURL( ConnectionParameter parameter, LdapUrl ldapUrl )
-    {
-        ldapUrl.getExtensions().add( new Extension( false, X_CONNECTION_NAME, parameter.getName() ) );
-        ldapUrl.setHost( parameter.getHost() );
-        ldapUrl.setPort( parameter.getPort() );
-
-        switch ( parameter.getEncryptionMethod() )
-        {
-            case NONE:
-                // default
-                break;
-
-            case LDAPS:
-                ldapUrl.getExtensions().add( new Extension( false, X_ENCRYPTION, X_ENCRYPTION_LDAPS ) );
-                break;
-
-            case START_TLS:
-                ldapUrl.getExtensions().add( new Extension( false, X_ENCRYPTION, X_ENCRYPTION_START_TLS ) );
-                break;
-        }
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-	public void mergeLdapUrlToParameters( LdapUrl ldapUrl, ConnectionParameter parameter )
-    {
-        // connection name, current date if absent
-        String name = ldapUrl.getExtensionValue( X_CONNECTION_NAME );
-
-        if ( StringUtils.isEmpty( name ) )
-        {
-            name = new SimpleDateFormat( "yyyy-MM-dd HH-mm-ss" ).format( new Date() ); //$NON-NLS-1$
-        }
-
-        parameter.setName( name );
-
-        // host
-        parameter.setHost( ldapUrl.getHost() );
-
-        // port
-        parameter.setPort( ldapUrl.getPort() );
-
-        // encryption method, none if unknown or absent
-        String encryption = ldapUrl.getExtensionValue( X_ENCRYPTION );
-
-        if ( StringUtils.isNotEmpty( encryption ) && X_ENCRYPTION_LDAPS.equalsIgnoreCase( encryption ) )
-        {
-            parameter.setEncryptionMethod( ConnectionParameter.EncryptionMethod.LDAPS );
-        }
-        else if ( StringUtils.isNotEmpty( encryption ) && X_ENCRYPTION_START_TLS.equalsIgnoreCase( encryption ) )
-        {
-            parameter.setEncryptionMethod( ConnectionParameter.EncryptionMethod.START_TLS );
-        }
-        else
-        {
-            parameter.setEncryptionMethod( ConnectionParameter.EncryptionMethod.NONE );
-        }
-    }
+public class NetworkParameterPage extends AbstractConnectionParameterPage {
+	private static final String X_CONNECTION_NAME = "X-CONNECTION-NAME"; //$NON-NLS-1$
+
+	private static final String X_ENCRYPTION = "X-ENCRYPTION"; //$NON-NLS-1$
+
+	private static final String X_ENCRYPTION_LDAPS = "ldaps"; //$NON-NLS-1$
+
+	private static final String X_ENCRYPTION_START_TLS = "StartTLS"; //$NON-NLS-1$
+
+	/** The connection name text widget */
+	private Text nameText;
+
+	/** The host name combo with the history of recently used host names */
+	private Combo hostCombo;
+
+	/** The host combo with the history of recently used ports */
+	private Combo portCombo;
+
+	/** The combo to select the encryption method */
+	private Combo encryptionMethodCombo;
+
+	/** The button to fetch and show the server's certificate */
+	private Button viewServerCertificateButton;
+
+	/** The button to check the connection parameters */
+	private Button checkConnectionButton;
+
+	/** The checkbox to make the connection read-only */
+	private Button readOnlyConnectionCheckbox;
+
+	/** A timeout for the connection. Default to 30s */
+	private Text timeoutSecondsText;
+
+	/**
+	 * A listener for the Link data widget. It will open the
+	 * CertificateValidationPreference dialog.
+	 */
+	private SelectionAdapter linkDataWidgetListener = new SelectionAdapter() {
+		@Override
+		public void widgetSelected(SelectionEvent event) {
+			String certificateValidationPreferencePageId = ConnectionUIPlugin.getDefault().getPluginProperties()
+					.getString("PrefPage_CertificateValidationPreferencePage_id"); //$NON-NLS-1$
+
+			PreferenceDialog dialog = PreferencesUtil.createPreferenceDialogOn(Display.getDefault().getActiveShell(),
+					certificateValidationPreferencePageId, new String[] { certificateValidationPreferencePageId },
+					null);
+			dialog.open();
+		}
+	};
+
+	/**
+	 * Gets the connection name.
+	 *
+	 * @return the connectio name
+	 */
+	private String getName() {
+		return nameText.getText();
+	}
+
+	/**
+	 * Gets the host name.
+	 *
+	 * @return the host name
+	 */
+	private String getHostName() {
+		return hostCombo.getText();
+	}
+
+	/**
+	 * Gets the port.
+	 *
+	 * @return the port
+	 */
+	private int getPort() {
+		return Integer.parseInt(portCombo.getText());
+	}
+
+	/**
+	 * Gets the timeout in seconds.
+	 *
+	 * @return The timeout in seconds
+	 */
+	private int getTimeoutSeconds() {
+		String timeoutSecondsString = timeoutSecondsText.getText();
+
+		if (Strings.isEmpty(timeoutSecondsString)) {
+			return 30;
+		} else {
+			return Integer.parseInt(timeoutSecondsString);
+		}
+	}
+
+	/**
+	 * Gets the encyrption method.
+	 *
+	 * @return the encyrption method
+	 */
+	private ConnectionParameter.EncryptionMethod getEncyrptionMethod() {
+		switch (encryptionMethodCombo.getSelectionIndex()) {
+		case 1:
+			return ConnectionParameter.EncryptionMethod.LDAPS;
+
+		case 2:
+			return ConnectionParameter.EncryptionMethod.START_TLS;
+
+		default:
+			return ConnectionParameter.EncryptionMethod.NONE;
+		}
+	}
+
+	/**
+	 * Gets a temporary connection with all connection parameter entered in this
+	 * page.
+	 *
+	 * @return a test connection
+	 */
+	private Connection getTestConnection() {
+		ConnectionParameter connectionParameter = new ConnectionParameter(null, getHostName(), getPort(),
+				getEncyrptionMethod(), ConnectionParameter.AuthenticationMethod.NONE, null, null, null, true, null,
+				30000L);
+
+		return new Connection(connectionParameter);
+	}
+
+	/**
+	 * Gets read only flag.
+	 *
+	 * @return the read only flag
+	 */
+	private boolean isReadOnly() {
+		return readOnlyConnectionCheckbox.getSelection();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	protected void createComposite(Composite parent) {
+		Composite composite = BaseWidgetUtils.createColumnContainer(parent, 1, 1);
+
+		Composite nameComposite = BaseWidgetUtils.createColumnContainer(composite, 2, 1);
+		BaseWidgetUtils.createLabel(nameComposite, Messages.getString("NetworkParameterPage.ConnectionName"), 1); //$NON-NLS-1$
+		nameText = BaseWidgetUtils.createText(nameComposite, StringUtils.EMPTY, 1); // $NON-NLS-1$
+
+		BaseWidgetUtils.createSpacer(composite, 1);
+
+		Group group = BaseWidgetUtils.createGroup(composite,
+				Messages.getString("NetworkParameterPage.NetworkParameter"), 1); //$NON-NLS-1$
+
+		IDialogSettings dialogSettings = ConnectionUIPlugin.getDefault().getDialogSettings();
+
+		// The network hostname
+		Composite groupComposite = BaseWidgetUtils.createColumnContainer(group, 3, 1);
+		BaseWidgetUtils.createLabel(groupComposite, Messages.getString("NetworkParameterPage.HostName"), 1); //$NON-NLS-1$
+		String[] hostHistory = HistoryUtils.load(dialogSettings, ConnectionUIConstants.DIALOGSETTING_KEY_HOST_HISTORY);
+		hostCombo = BaseWidgetUtils.createCombo(groupComposite, hostHistory, -1, 2);
+
+		// The network port
+		BaseWidgetUtils.createLabel(groupComposite, Messages.getString("NetworkParameterPage.Port"), 1); //$NON-NLS-1$
+		String[] portHistory = HistoryUtils.load(dialogSettings, ConnectionUIConstants.DIALOGSETTING_KEY_PORT_HISTORY);
+		portCombo = BaseWidgetUtils.createCombo(groupComposite, portHistory, -1, 2);
+		portCombo.setTextLimit(5);
+		portCombo.setText("389"); //$NON-NLS-1$
+
+		// The timeout
+		BaseWidgetUtils.createLabel(groupComposite, Messages.getString("NetworkParameterPage.Timeout"), 2); //$NON-NLS-1$
+		timeoutSecondsText = BaseWidgetUtils.createText(groupComposite, "30", 1); //$NON-NLS-1$
+		timeoutSecondsText.setTextLimit(7);
+
+		String[] encMethods = new String[] { Messages.getString("NetworkParameterPage.NoEncryption"), //$NON-NLS-1$
+				Messages.getString("NetworkParameterPage.UseSSLEncryption"), //$NON-NLS-1$
+				Messages.getString("NetworkParameterPage.UseStartTLS") //$NON-NLS-1$
+		};
+
+		BaseWidgetUtils.createLabel(groupComposite, Messages.getString("NetworkParameterPage.EncryptionMethod"), 1); //$NON-NLS-1$
+		encryptionMethodCombo = BaseWidgetUtils.createReadonlyCombo(groupComposite, encMethods, 0, 2);
+
+		boolean validateCertificates = ConnectionCorePlugin.getDefault().getPluginPreferences()
+				.getBoolean(ConnectionCoreConstants.PREFERENCE_VALIDATE_CERTIFICATES);
+
+		if (validateCertificates) {
+			BaseWidgetUtils.createSpacer(groupComposite, 1);
+
+			Link link = BaseWidgetUtils.createLink(groupComposite,
+					Messages.getString("NetworkParameterPage.CertificateValidationLink"), 2); //$NON-NLS-1$
+			GridData linkGridData = new GridData(GridData.FILL_HORIZONTAL);
+			linkGridData.horizontalSpan = 2;
+			linkGridData.widthHint = 100;
+			link.setLayoutData(linkGridData);
+			link.addSelectionListener(linkDataWidgetListener);
+		} else {
+			BaseWidgetUtils.createSpacer(groupComposite, 1);
+			BaseWidgetUtils.createLabel(groupComposite,
+					Messages.getString("NetworkParameterPage.WarningCertificateValidation"), 2); //$NON-NLS-1$
+		}
+
+		BaseWidgetUtils.createSpacer(groupComposite, 1);
+		GridData gridData = new GridData();
+		gridData.horizontalAlignment = SWT.RIGHT;
+		gridData.verticalAlignment = SWT.BOTTOM;
+		viewServerCertificateButton = new Button(groupComposite, SWT.PUSH);
+		viewServerCertificateButton.setLayoutData(gridData);
+		viewServerCertificateButton.setText(Messages.getString("NetworkParameterPage.ViewCertificate")); //$NON-NLS-1$
+		checkConnectionButton = new Button(groupComposite, SWT.PUSH);
+		checkConnectionButton.setLayoutData(gridData);
+		checkConnectionButton.setText(Messages.getString("NetworkParameterPage.CheckNetworkParameter")); //$NON-NLS-1$
+
+		readOnlyConnectionCheckbox = BaseWidgetUtils.createCheckbox(composite,
+				Messages.getString("NetworkParameterPage.ReadOnly"), 1); //$NON-NLS-1$
+
+		BaseWidgetUtils.createSpacer(composite, 1);
+		nameText.setFocus();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	protected void validate() {
+		// set enabled/disabled state of check connection button
+		checkConnectionButton.setEnabled(
+				!hostCombo.getText().equals(StringUtils.EMPTY) && !portCombo.getText().equals(StringUtils.EMPTY));
+
+		// set enabled/disabled state of show server certificate button
+		viewServerCertificateButton
+				.setEnabled(checkConnectionButton.isEnabled() && getEncyrptionMethod() != EncryptionMethod.NONE);
+
+		// validate input fields
+		message = null;
+		infoMessage = null;
+		errorMessage = null;
+
+		if (Strings.isEmpty(portCombo.getText())) // $NON-NLS-1$
+		{
+			message = Messages.getString("NetworkParameterPage.PleaseEnterPort"); //$NON-NLS-1$
+		}
+
+		if (Strings.isEmpty(hostCombo.getText())) // $NON-NLS-1$
+		{
+			message = Messages.getString("NetworkParameterPage.PleaseEnterHostname"); //$NON-NLS-1$
+		}
+
+		if (Strings.isEmpty(nameText.getText())) // $NON-NLS-1$
+		{
+			message = Messages.getString("NetworkParameterPage.PleaseEnterConnectionName"); //$NON-NLS-1$
+		}
+
+		if (Strings.isEmpty(timeoutSecondsText.getText())) // $NON-NLS-1$
+		{
+			timeoutSecondsText.setText("30");
+		}
+
+//		if (ConnectionCorePlugin.getDefault().getConnectionManager().getConnectionByName(nameText.getText()) != null
+//				&& ((connectionParameter == null) || !nameText.getText().equals(connectionParameter.getName()))) {
+//			errorMessage = NLS.bind(Messages.getString("NetworkParameterPage.ConnectionExists"), new String[] //$NON-NLS-1$
+//			{ nameText.getText() });
+//		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	protected void loadParameters(ConnectionParameter parameter) {
+		connectionParameter = parameter;
+
+		nameText.setText(CommonUIUtils.getTextValue(parameter.getName()));
+		hostCombo.setText(CommonUIUtils.getTextValue(parameter.getHost()));
+		portCombo.setText(Integer.toString(parameter.getPort()));
+		int encryptionMethodIndex = 0;
+
+		if (parameter.getEncryptionMethod() == EncryptionMethod.LDAPS) {
+			encryptionMethodIndex = 1;
+		} else if (parameter.getEncryptionMethod() == EncryptionMethod.START_TLS) {
+			encryptionMethodIndex = 2;
+		}
+
+		encryptionMethodCombo.select(encryptionMethodIndex);
+		readOnlyConnectionCheckbox.setSelection(parameter.isReadOnly());
+		timeoutSecondsText.setText(Long.toString(parameter.getTimeoutMillis() / 1000L));
+
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	protected void initListeners() {
+		nameText.addModifyListener(event -> connectionPageModified());
+
+		hostCombo.addModifyListener(event -> connectionPageModified());
+
+		portCombo.addVerifyListener(event -> {
+			if (!event.text.matches("[0-9]*")) //$NON-NLS-1$
+			{
+				event.doit = false;
+			}
+		});
+
+		portCombo.addModifyListener(event -> connectionPageModified());
+
+		encryptionMethodCombo.addSelectionListener(new SelectionAdapter() {
+			/**
+			 * {@inheritDoc}
+			 */
+			@Override
+			public void widgetSelected(SelectionEvent event) {
+				connectionPageModified();
+			}
+		});
+
+		checkConnectionButton.addSelectionListener(new SelectionAdapter() {
+			/**
+			 * {@inheritDoc}
+			 */
+			@Override
+			public void widgetSelected(SelectionEvent event) {
+				Connection connection = getTestConnection();
+				CheckNetworkParameterRunnable runnable = new CheckNetworkParameterRunnable(connection);
+				IStatus status = RunnableContextRunner.execute(runnable, runnableContext, true);
+
+				if (status.isOK()) {
+					String title = Messages.getString("NetworkParameterPage.CheckNetworkParameter"); //$NON-NLS-1$
+					String message = Messages.getString("NetworkParameterPage.ConnectionEstablished"); //$NON-NLS-1$
+
+					SSLSession sslSession = runnable.getSslSession();
+					if (sslSession != null) {
+						message += "\n\nProtocol: " + sslSession.getProtocol();
+						message += "\nCipher Suite: " + sslSession.getCipherSuite();
+					}
+					MessageDialog.openInformation(Display.getDefault().getActiveShell(), title, message);
+				}
+			}
+		});
+
+		viewServerCertificateButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent event) {
+				Connection connection = getTestConnection();
+				CheckNetworkParameterRunnable runnable = new CheckNetworkParameterRunnable(connection);
+				IStatus status = RunnableContextRunner.execute(runnable, runnableContext, true);
+
+				if (status.isOK()) {
+					try {
+						SSLSession sslSession = runnable.getSslSession();
+						Certificate[] certificates = sslSession.getPeerCertificates();
+						X509Certificate[] serverCertificates = new X509Certificate[certificates.length];
+						for (int i = 0; i < certificates.length; i++) {
+							serverCertificates[i] = (X509Certificate) certificates[i];
+						}
+						new CertificateInfoDialog(Display.getDefault().getActiveShell(), serverCertificates).open();
+					} catch (SSLPeerUnverifiedException e) {
+						throw new RuntimeException(e);
+					}
+				}
+			}
+		});
+
+		readOnlyConnectionCheckbox.addSelectionListener(new SelectionAdapter() {
+			/**
+			 * {@inheritDoc}
+			 */
+			@Override
+			public void widgetSelected(SelectionEvent event) {
+				connectionPageModified();
+			}
+		});
+
+		// The timeout events
+		timeoutSecondsText.addModifyListener(event -> connectionPageModified());
+
+		timeoutSecondsText.addVerifyListener(event -> {
+			if (!event.text.matches("[0-9]*")) //$NON-NLS-1$
+			{
+				event.doit = false;
+			}
+		});
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void saveParameters(ConnectionParameter parameter) {
+		parameter.setName(getName());
+		parameter.setHost(getHostName());
+		parameter.setPort(getPort());
+		parameter.setEncryptionMethod(getEncyrptionMethod());
+		parameter.setReadOnly(isReadOnly());
+		parameter.setTimeoutMillis(getTimeoutSeconds() * 1000L);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void saveDialogSettings() {
+		IDialogSettings dialogSettings = ConnectionUIPlugin.getDefault().getDialogSettings();
+		HistoryUtils.save(dialogSettings, ConnectionUIConstants.DIALOGSETTING_KEY_HOST_HISTORY, hostCombo.getText());
+		HistoryUtils.save(dialogSettings, ConnectionUIConstants.DIALOGSETTING_KEY_PORT_HISTORY, portCombo.getText());
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void setFocus() {
+		nameText.setFocus();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean areParametersModifed() {
+		return isReconnectionRequired() || !StringUtils.equals(connectionParameter.getName(), getName());
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean isReconnectionRequired() {
+		return (connectionParameter == null) || (!StringUtils.equals(connectionParameter.getHost(), getHostName()))
+				|| (connectionParameter.getPort() != getPort())
+				|| (connectionParameter.getEncryptionMethod() != getEncyrptionMethod())
+				|| (connectionParameter.isReadOnly() != isReadOnly())
+				|| (connectionParameter.getTimeoutMillis() != getTimeoutSeconds() * 1000L);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void mergeParametersToLdapURL(ConnectionParameter parameter, LdapUrl ldapUrl) {
+		ldapUrl.getExtensions().add(new Extension(false, X_CONNECTION_NAME, parameter.getName()));
+		ldapUrl.setHost(parameter.getHost());
+		ldapUrl.setPort(parameter.getPort());
+
+		switch (parameter.getEncryptionMethod()) {
+		case NONE:
+			// default
+			break;
+
+		case LDAPS:
+			ldapUrl.getExtensions().add(new Extension(false, X_ENCRYPTION, X_ENCRYPTION_LDAPS));
+			break;
+
+		case START_TLS:
+			ldapUrl.getExtensions().add(new Extension(false, X_ENCRYPTION, X_ENCRYPTION_START_TLS));
+			break;
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void mergeLdapUrlToParameters(LdapUrl ldapUrl, ConnectionParameter parameter) {
+		// connection name, current date if absent
+		String name = ldapUrl.getExtensionValue(X_CONNECTION_NAME);
+
+		if (StringUtils.isEmpty(name)) {
+			name = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss").format(new Date()); //$NON-NLS-1$
+		}
+
+		parameter.setName(name);
+
+		// host
+		parameter.setHost(ldapUrl.getHost());
+
+		// port
+		parameter.setPort(ldapUrl.getPort());
+
+		// encryption method, none if unknown or absent
+		String encryption = ldapUrl.getExtensionValue(X_ENCRYPTION);
+
+		if (StringUtils.isNotEmpty(encryption) && X_ENCRYPTION_LDAPS.equalsIgnoreCase(encryption)) {
+			parameter.setEncryptionMethod(ConnectionParameter.EncryptionMethod.LDAPS);
+		} else if (StringUtils.isNotEmpty(encryption) && X_ENCRYPTION_START_TLS.equalsIgnoreCase(encryption)) {
+			parameter.setEncryptionMethod(ConnectionParameter.EncryptionMethod.START_TLS);
+		} else {
+			parameter.setEncryptionMethod(ConnectionParameter.EncryptionMethod.NONE);
+		}
+	}
 }

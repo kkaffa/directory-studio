@@ -452,7 +452,7 @@ Wahl, et. al.               Standards Track                     [Page 8]
 RFC 2251                         LDAPv3                    December 1997
 
 
-   - supportedExtension: list of supported extended operations.
+   - supportedExtension: list of supported .
 
    - supportedControl: list of supported controls.
 

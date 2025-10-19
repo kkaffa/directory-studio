@@ -454,7 +454,7 @@ attributeTypes:( 1.3.6.1.4.1.1466.101.120.15 NAME 'supportedLDAPVersion' DESC
  'RFC2252: supported LDAP versions' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 USAGE
   dSAOperation )
 attributeTypes:( 1.3.6.1.4.1.1466.101.120.7 NAME 'supportedExtension' DESC 'RF
- C2252: supported extended operations' SYNTAX 1.3.6.1.4.1.1466.115.121.1.38 US
+ C2252: supported ' SYNTAX 1.3.6.1.4.1.1466.115.121.1.38 US
  AGE dSAOperation )
 attributeTypes:( 1.3.6.1.4.1.1466.101.120.13 NAME 'supportedControl' DESC 'RFC
  2252: supported controls' SYNTAX 1.3.6.1.4.1.1466.115.121.1.38 USAGE dSAOpera

@@ -32,7 +32,7 @@ import org.apache.directory.studio.ldapbrowser.core.model.IBrowserConnection;
 
 
 /**
- * Runnable to execute extended operations.
+ * Runnable to execute .
  * 
  * @author <a href="mailto:dev@directory.apache.org">Apache Directory Project</a>
  */

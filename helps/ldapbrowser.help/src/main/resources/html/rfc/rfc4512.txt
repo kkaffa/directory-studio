@@ -2040,7 +2040,7 @@ RFC 4512                      LDAP Models                      June 2006
 
       - supportedControl: recognized LDAP controls;
 
-      - supportedExtension: recognized LDAP extended operations;
+      - supportedExtension: recognized LDAP ;
 
       - supportedFeatures: recognized LDAP features;
 
@@ -2142,8 +2142,8 @@ RFC 4512                      LDAP Models                      June 2006
 5.1.4.  'supportedExtension'
 
    The 'supportedExtension' attribute lists object identifiers
-   identifying the extended operations [RFC4511] that the server
-   supports.  If the server does not support any extended operations,
+   identifying the  [RFC4511] that the server
+   supports.  If the server does not support any ,
    this attribute will be absent.
 
    An extended operation generally consists of an extended request and
@@ -2761,7 +2761,7 @@ A.2.2.  Section 5 of RFC 2252
 
    The 'supportedExtension' description was clarified.  A server need
    only list the OBJECT IDENTIFIERs associated with the extended
-   requests of the extended operations it recognizes.
+   requests of the  it recognizes.
 
    The 'supportedControl' description was clarified.  A server need only
    list the OBJECT IDENTIFIERs associated with the request controls it

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="Apache Directory Studio" uid="org.apache.directory.studio.product" id="org.apache.directory.studio.rcp.product" application="org.apache.directory.studio.rcp.application" version="2.0.0.qualifier" useFeatures="true" includeLaunchers="true">
+<product name="Apache Directory Studio" uid="org.apache.directory.studio.product" id="org.apache.directory.studio.rcp.product" application="org.apache.directory.studio.rcp.application" version="2.0.0.qualifier" type="features" includeLaunchers="true" autoIncludeRequirements="true">
 
    <aboutInfo>
       <image path="/org.apache.directory.studio.rcp/resources/pictures/product_lg.gif"/>
@@ -263,6 +263,7 @@ http://www.apache.org/licenses/
       <feature id="org.eclipse.equinox.p2.user.ui"/>
       <feature id="org.eclipse.equinox.p2.extras.feature"/>
       <feature id="org.eclipse.ecf.filetransfer.ssl.feature"/>
+      <feature id="org.eclipse.ecf.filetransfer.httpclient5.feature" installMode="root"/>
    </features>
 
    <configurations>

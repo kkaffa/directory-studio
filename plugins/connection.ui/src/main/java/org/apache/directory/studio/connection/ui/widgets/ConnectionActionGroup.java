@@ -20,7 +20,6 @@
 
 package org.apache.directory.studio.connection.ui.widgets;
 
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -56,298 +55,267 @@ import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.actions.ActionFactory;
 
-
 /**
  * This class manages all the actions of the connection widget.
  * 
- * @author <a href="mailto:dev@directory.apache.org">Apache Directory Project</a>
+ * @author <a href="mailto:dev@directory.apache.org">Apache Directory
+ *         Project</a>
  */
-public class ConnectionActionGroup implements ActionHandlerManager, IMenuListener
-{
-    /** The collapse all action. */
-    private CollapseAllAction collapseAllAction;
+public class ConnectionActionGroup implements ActionHandlerManager, IMenuListener {
+	/** The collapse all action. */
+	private CollapseAllAction collapseAllAction;
 
-    /** The expand all action. */
-    private ExpandAllAction expandAllAction;
+	/** The expand all action. */
+	private ExpandAllAction expandAllAction;
 
-    /** The Constant newConnectionAction. */
-    protected static final String NEW_CONNECTION_ACTION = "newConnectionAction"; //$NON-NLS-1$
+	/** The Constant newConnectionAction. */
+	protected static final String NEW_CONNECTION_ACTION = "newConnectionAction"; //$NON-NLS-1$
 
-    /** The Constant newConnectionFolderAction. */
-    protected static final String NEW_CONNECTION_FOLDER_ACTION = "newConnectionFolderAction"; //$NON-NLS-1$
+	/** The Constant newConnectionFolderAction. */
+	protected static final String NEW_CONNECTION_FOLDER_ACTION = "newConnectionFolderAction"; //$NON-NLS-1$
 
-    /** The Constant openConnectionAction. */
-    protected static final String OPEN_CONNECTION_ACTION = "openConnectionAction"; //$NON-NLS-1$
+	/** The Constant openConnectionAction. */
+	protected static final String OPEN_CONNECTION_ACTION = "openConnectionAction"; //$NON-NLS-1$
 
-    /** The Constant closeConnectionAction. */
-    protected static final String CLOSE_CONNECTION_ACTION = "closeConnectionAction"; //$NON-NLS-1$
+	/** The Constant closeConnectionAction. */
+	protected static final String CLOSE_CONNECTION_ACTION = "closeConnectionAction"; //$NON-NLS-1$
 
-    /** The Constant copyConnectionAction. */
-    protected static final String COPY_CONNECTION_ACTION = "copyConnectionAction"; //$NON-NLS-1$
+	/** The Constant copyConnectionAction. */
+	protected static final String COPY_CONNECTION_ACTION = "copyConnectionAction"; //$NON-NLS-1$
 
-    /** The Constant pasteConnectionAction. */
-    protected static final String PASTE_CONNECTION_ACTION = "pasteConnectionAction"; //$NON-NLS-1$
+	/** The Constant pasteConnectionAction. */
+	protected static final String PASTE_CONNECTION_ACTION = "pasteConnectionAction"; //$NON-NLS-1$
 
-    /** The Constant deleteConnectionAction. */
-    protected static final String DELETE_CONNECTION_ACTION = "deleteConnectionAction"; //$NON-NLS-1$
+	/** The Constant deleteConnectionAction. */
+	protected static final String DELETE_CONNECTION_ACTION = "deleteConnectionAction"; //$NON-NLS-1$
 
-    /** The Constant renameConnectionAction. */
-    protected static final String RENAME_CONNECTION_ACTION = "renameConnectionAction"; //$NON-NLS-1$
+	/** The Constant renameConnectionAction. */
+	protected static final String RENAME_CONNECTION_ACTION = "renameConnectionAction"; //$NON-NLS-1$
 
-    /** The Constant propertyDialogAction. */
-    protected static final String PROPERTY_DIALOG_ACTION = "propertyDialogAction"; //$NON-NLS-1$
+	/** The Constant propertyDialogAction. */
+	protected static final String PROPERTY_DIALOG_ACTION = "propertyDialogAction"; //$NON-NLS-1$
 
-    /** The drag connection listener. */
-    private DragConnectionListener dragConnectionListener;
+	/** The drag connection listener. */
+	private DragConnectionListener dragConnectionListener;
 
-    /** The drop connection listener. */
-    private DropConnectionListener dropConnectionListener;
+	/** The drop connection listener. */
+	private DropConnectionListener dropConnectionListener;
 
-    /** The action map. */
-    protected Map<String, ConnectionViewActionProxy> connectionActionMap;
+	/** The action map. */
+	protected Map<String, ConnectionViewActionProxy> connectionActionMap;
 
-    /** The action bars. */
-    protected IActionBars actionBars;
+	/** The action bars. */
+	protected IActionBars actionBars;
 
-    /** The connection main widget. */
-    protected ConnectionWidget mainWidget;
+	/** The connection main widget. */
+	protected ConnectionWidget mainWidget;
 
+	/**
+	 * Creates a new instance of ConnectionActionGroup.
+	 *
+	 * @param mainWidget    the connection main widget
+	 * @param configuration the connection widget configuration
+	 */
+	public ConnectionActionGroup(ConnectionWidget mainWidget, ConnectionConfiguration configuration) {
+		this.mainWidget = mainWidget;
+		TreeViewer viewer = mainWidget.getViewer();
 
-    /**
-     * Creates a new instance of ConnectionActionGroup.
-     *
-     * @param mainWidget the connection main widget
-     * @param configuration the connection widget configuration
-     */
-    public ConnectionActionGroup( ConnectionWidget mainWidget, ConnectionConfiguration configuration )
-    {
-        this.mainWidget = mainWidget;
-        TreeViewer viewer = mainWidget.getViewer();
+		collapseAllAction = new CollapseAllAction(viewer);
+		expandAllAction = new ExpandAllAction(viewer);
 
-        collapseAllAction = new CollapseAllAction( viewer );
-        expandAllAction = new ExpandAllAction( viewer );
+		connectionActionMap = new HashMap<>();
 
-        connectionActionMap = new HashMap<>();
+		connectionActionMap.put(NEW_CONNECTION_ACTION,
+				new ConnectionViewActionProxy(viewer, this, new NewConnectionAction()));
+		connectionActionMap.put(NEW_CONNECTION_FOLDER_ACTION,
+				new ConnectionViewActionProxy(viewer, this, new NewConnectionFolderAction()));
+		connectionActionMap.put(OPEN_CONNECTION_ACTION,
+				new ConnectionViewActionProxy(viewer, this, new OpenConnectionAction()));
+		connectionActionMap.put(CLOSE_CONNECTION_ACTION,
+				new ConnectionViewActionProxy(viewer, this, new CloseConnectionAction()));
+		connectionActionMap.put(PASTE_CONNECTION_ACTION,
+				new ConnectionViewActionProxy(viewer, this, new PasteAction()));
+		connectionActionMap.put(COPY_CONNECTION_ACTION, new ConnectionViewActionProxy(viewer, this,
+				new CopyAction((StudioActionProxy) connectionActionMap.get(PASTE_CONNECTION_ACTION))));
+		connectionActionMap.put(DELETE_CONNECTION_ACTION,
+				new ConnectionViewActionProxy(viewer, this, new DeleteAction()));
+		connectionActionMap.put(RENAME_CONNECTION_ACTION,
+				new ConnectionViewActionProxy(viewer, this, new RenameAction()));
+		connectionActionMap.put(PROPERTY_DIALOG_ACTION,
+				new ConnectionViewActionProxy(viewer, this, new PropertiesAction()));
 
-        connectionActionMap.put( NEW_CONNECTION_ACTION, new ConnectionViewActionProxy( viewer, this,
-            new NewConnectionAction() ) );
-        connectionActionMap.put( NEW_CONNECTION_FOLDER_ACTION, new ConnectionViewActionProxy( viewer, this,
-            new NewConnectionFolderAction() ) );
-        connectionActionMap.put( OPEN_CONNECTION_ACTION, new ConnectionViewActionProxy( viewer, this,
-            new OpenConnectionAction() ) );
-        connectionActionMap.put( CLOSE_CONNECTION_ACTION, new ConnectionViewActionProxy( viewer, this,
-            new CloseConnectionAction() ) );
-        connectionActionMap
-            .put( PASTE_CONNECTION_ACTION, new ConnectionViewActionProxy( viewer, this, new PasteAction() ) );
-        connectionActionMap.put( COPY_CONNECTION_ACTION, new ConnectionViewActionProxy( viewer, this, new CopyAction(
-            ( StudioActionProxy ) connectionActionMap.get( PASTE_CONNECTION_ACTION ) ) ) );
-        connectionActionMap.put( DELETE_CONNECTION_ACTION, new ConnectionViewActionProxy( viewer, this,
-            new DeleteAction() ) );
-        connectionActionMap.put( RENAME_CONNECTION_ACTION, new ConnectionViewActionProxy( viewer, this,
-            new RenameAction() ) );
-        connectionActionMap.put( PROPERTY_DIALOG_ACTION, new ConnectionViewActionProxy( viewer, this,
-            new PropertiesAction() ) );
+		// DND support
+		dropConnectionListener = new DropConnectionListener();
+		dragConnectionListener = new DragConnectionListener(viewer);
+		int ops = DND.DROP_COPY | DND.DROP_MOVE;
+		Transfer[] transfers = new Transfer[] { ConnectionTransfer.getInstance() };
+		viewer.addDragSupport(ops, transfers, dragConnectionListener);
+		viewer.addDropSupport(ops, transfers, dropConnectionListener);
+	}
 
-        // DND support
-        dropConnectionListener = new DropConnectionListener();
-        dragConnectionListener = new DragConnectionListener( viewer );
-        int ops = DND.DROP_COPY | DND.DROP_MOVE;
-        Transfer[] transfers = new Transfer[]
-            { ConnectionTransfer.getInstance() };
-        viewer.addDragSupport( ops, transfers, dragConnectionListener );
-        viewer.addDropSupport( ops, transfers, dropConnectionListener );
-    }
+	/**
+	 * Disposes this action group.
+	 */
+	public void dispose() {
+		if (mainWidget != null) {
+			for (Iterator<String> it = connectionActionMap.keySet().iterator(); it.hasNext();) {
+				String key = it.next();
+				ConnectionViewActionProxy action = this.connectionActionMap.get(key);
+				action.dispose();
+				it.remove();
+			}
 
+			collapseAllAction.dispose();
+			collapseAllAction = null;
 
-    /**
-     * Disposes this action group.
-     */
-    public void dispose()
-    {
-        if ( mainWidget != null )
-        {
-            for ( Iterator<String> it = connectionActionMap.keySet().iterator(); it.hasNext(); )
-            {
-                String key = it.next();
-                ConnectionViewActionProxy action = this.connectionActionMap.get( key );
-                action.dispose();
-                it.remove();
-            }
+			expandAllAction.dispose();
+			expandAllAction = null;
 
-            collapseAllAction.dispose();
-            collapseAllAction = null;
+			connectionActionMap.clear();
+			connectionActionMap = null;
 
-            expandAllAction.dispose();
-            expandAllAction = null;
+			actionBars = null;
+			mainWidget = null;
 
-            connectionActionMap.clear();
-            connectionActionMap = null;
+			dragConnectionListener = null;
+			dropConnectionListener = null;
+		}
+	}
 
-            actionBars = null;
-            mainWidget = null;
+	/**
+	 * Enables the action handlers.
+	 *
+	 * @param actionBars the action bars
+	 */
+	public void enableGlobalActionHandlers(IActionBars actionBars) {
+		this.actionBars = actionBars;
+		activateGlobalActionHandlers();
+	}
 
-            dragConnectionListener = null;
-            dropConnectionListener = null;
-        }
-    }
+	/**
+	 * Fills the tool bar.
+	 *
+	 * @param toolBarManager the tool bar manager
+	 */
+	public void fillToolBar(IToolBarManager toolBarManager) {
+		toolBarManager.add((IAction) this.connectionActionMap.get(NEW_CONNECTION_ACTION));
+		toolBarManager.add(new Separator());
+		toolBarManager.add((IAction) this.connectionActionMap.get(OPEN_CONNECTION_ACTION));
+		toolBarManager.add((IAction) this.connectionActionMap.get(CLOSE_CONNECTION_ACTION));
+		toolBarManager.add(new Separator());
+		toolBarManager.add(expandAllAction);
+		toolBarManager.add(collapseAllAction);
 
+		toolBarManager.update(true);
+	}
 
-    /**
-     * Enables the action handlers.
-     *
-     * @param actionBars the action bars
-     */
-    public void enableGlobalActionHandlers( IActionBars actionBars )
-    {
-        this.actionBars = actionBars;
-        activateGlobalActionHandlers();
-    }
+	/**
+	 * Fills the local menu.
+	 *
+	 * @param menuManager the local menu manager
+	 */
+	public void fillMenu(IMenuManager menuManager) {
+	}
 
+	/**
+	 * Fills the context menu.
+	 *
+	 * @param menuManager the context menu manager
+	 */
+	public void fillContextMenu(IMenuManager menuManager) {
+		menuManager.setRemoveAllWhenShown(true);
+		menuManager.addMenuListener(this);
+	}
 
-    /**
-     * Fills the tool bar.
-     *
-     * @param toolBarManager the tool bar manager
-     */
-    public void fillToolBar( IToolBarManager toolBarManager )
-    {
-        toolBarManager.add( ( IAction ) this.connectionActionMap.get( NEW_CONNECTION_ACTION ) );
-        toolBarManager.add( new Separator() );
-        toolBarManager.add( ( IAction ) this.connectionActionMap.get( OPEN_CONNECTION_ACTION ) );
-        toolBarManager.add( ( IAction ) this.connectionActionMap.get( CLOSE_CONNECTION_ACTION ) );
-        toolBarManager.add( new Separator() );
-        toolBarManager.add( expandAllAction );
-        toolBarManager.add( collapseAllAction );
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * This implementation fills the context menu.
+	 */
+	public void menuAboutToShow(IMenuManager menuManager) {
+		// add
+		menuManager.add((IAction) connectionActionMap.get(NEW_CONNECTION_ACTION));
+		menuManager.add((IAction) connectionActionMap.get(NEW_CONNECTION_FOLDER_ACTION));
+		menuManager.add(new Separator());
 
-        toolBarManager.update( true );
-    }
+		// open/close
+		if ((connectionActionMap.get(CLOSE_CONNECTION_ACTION)).isEnabled()) {
+			menuManager.add((IAction) connectionActionMap.get(CLOSE_CONNECTION_ACTION));
+		} else if ((connectionActionMap.get(OPEN_CONNECTION_ACTION)).isEnabled()) {
+			menuManager.add((IAction) connectionActionMap.get(OPEN_CONNECTION_ACTION));
+		}
+		menuManager.add(new Separator());
 
+		// copy/paste/...
+		menuManager.add((IAction) connectionActionMap.get(COPY_CONNECTION_ACTION));
+		menuManager.add((IAction) connectionActionMap.get(PASTE_CONNECTION_ACTION));
+		menuManager.add((IAction) connectionActionMap.get(DELETE_CONNECTION_ACTION));
+		menuManager.add((IAction) connectionActionMap.get(RENAME_CONNECTION_ACTION));
+		menuManager.add(new Separator());
 
-    /**
-     * Fills the local menu.
-     *
-     * @param menuManager the local menu manager
-     */
-    public void fillMenu( IMenuManager menuManager )
-    {
-    }
+		// additions
+		menuManager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+		menuManager.add(new Separator());
 
+		// properties
+		menuManager.add((IAction) connectionActionMap.get(PROPERTY_DIALOG_ACTION));
+	}
 
-    /**
-     * Fills the context menu.
-     *
-     * @param menuManager the context menu manager
-     */
-    public void fillContextMenu( IMenuManager menuManager )
-    {
-        menuManager.setRemoveAllWhenShown( true );
-        menuManager.addMenuListener( this );
-    }
+	/**
+	 * Activates the action handlers.
+	 */
+	public void activateGlobalActionHandlers() {
+		if (actionBars == null) {
+			IAction copyConnectionAction = connectionActionMap.get(COPY_CONNECTION_ACTION);
+			copyConnectionAction.setActionDefinitionId(ConnectionUIConstants.CMD_COPY);
+			ActionUtils.activateActionHandler(copyConnectionAction);
 
+			IAction pasteConnectionAction = connectionActionMap.get(PASTE_CONNECTION_ACTION);
+			pasteConnectionAction.setActionDefinitionId(ConnectionUIConstants.CMD_PASTE);
+			ActionUtils.activateActionHandler(pasteConnectionAction);
 
-    /**
-     * {@inheritDoc}
-     * 
-     * This implementation fills the context menu.
-     */
-    public void menuAboutToShow( IMenuManager menuManager )
-    {
-        // add
-        menuManager.add( ( IAction ) connectionActionMap.get( NEW_CONNECTION_ACTION ) );
-        menuManager.add( ( IAction ) connectionActionMap.get( NEW_CONNECTION_FOLDER_ACTION ) );
-        menuManager.add( new Separator() );
+			IAction deleteConnectionAction = connectionActionMap.get(DELETE_CONNECTION_ACTION);
+			deleteConnectionAction.setActionDefinitionId(ConnectionUIConstants.CMD_DELETE);
+			ActionUtils.activateActionHandler(deleteConnectionAction);
 
-        // open/close
-        if ( ( connectionActionMap.get( CLOSE_CONNECTION_ACTION ) ).isEnabled() )
-        {
-            menuManager.add( ( IAction ) connectionActionMap.get( CLOSE_CONNECTION_ACTION ) );
-        }
-        else if ( ( connectionActionMap.get( OPEN_CONNECTION_ACTION ) ).isEnabled() )
-        {
-            menuManager.add( ( IAction ) connectionActionMap.get( OPEN_CONNECTION_ACTION ) );
-        }
-        menuManager.add( new Separator() );
+			IAction propertyDialogAction = connectionActionMap.get(PROPERTY_DIALOG_ACTION);
+			propertyDialogAction.setActionDefinitionId(ConnectionUIConstants.CMD_PROPERTIES);
+			ActionUtils.activateActionHandler(propertyDialogAction);
+		} else {
+			actionBars.setGlobalActionHandler(ActionFactory.COPY.getId(),
+					(IAction) connectionActionMap.get(COPY_CONNECTION_ACTION));
+			actionBars.setGlobalActionHandler(ActionFactory.PASTE.getId(),
+					(IAction) connectionActionMap.get(PASTE_CONNECTION_ACTION));
+			actionBars.setGlobalActionHandler(ActionFactory.DELETE.getId(),
+					(IAction) connectionActionMap.get(DELETE_CONNECTION_ACTION));
+			actionBars.setGlobalActionHandler(ActionFactory.RENAME.getId(),
+					(IAction) connectionActionMap.get(RENAME_CONNECTION_ACTION));
+			actionBars.setGlobalActionHandler(ActionFactory.PROPERTIES.getId(),
+					(IAction) connectionActionMap.get(PROPERTY_DIALOG_ACTION));
+			actionBars.updateActionBars();
+		}
+	}
 
-        // copy/paste/...
-        menuManager.add( ( IAction ) connectionActionMap.get( COPY_CONNECTION_ACTION ) );
-        menuManager.add( ( IAction ) connectionActionMap.get( PASTE_CONNECTION_ACTION ) );
-        menuManager.add( ( IAction ) connectionActionMap.get( DELETE_CONNECTION_ACTION ) );
-        menuManager.add( ( IAction ) connectionActionMap.get( RENAME_CONNECTION_ACTION ) );
-        menuManager.add( new Separator() );
-
-        // additions
-        menuManager.add( new Separator( IWorkbenchActionConstants.MB_ADDITIONS ) );
-        menuManager.add( new Separator() );
-
-        // properties
-        menuManager.add( ( IAction ) connectionActionMap.get( PROPERTY_DIALOG_ACTION ) );
-    }
-
-
-    /**
-     * Activates the action handlers.
-     */
-    public void activateGlobalActionHandlers()
-    {
-        if ( actionBars == null )
-        {
-            IAction copyConnectionAction = connectionActionMap.get( COPY_CONNECTION_ACTION );
-            copyConnectionAction.setActionDefinitionId( ConnectionUIConstants.CMD_COPY );
-            ActionUtils.activateActionHandler( copyConnectionAction );
-
-            IAction pasteConnectionAction = connectionActionMap.get( PASTE_CONNECTION_ACTION );
-            pasteConnectionAction.setActionDefinitionId( ConnectionUIConstants.CMD_PASTE );
-            ActionUtils.activateActionHandler( pasteConnectionAction );
-
-            IAction deleteConnectionAction = connectionActionMap.get( DELETE_CONNECTION_ACTION );
-            deleteConnectionAction.setActionDefinitionId( ConnectionUIConstants.CMD_DELETE );
-            ActionUtils.activateActionHandler( deleteConnectionAction );
-
-            IAction propertyDialogAction = connectionActionMap.get( PROPERTY_DIALOG_ACTION );
-            propertyDialogAction.setActionDefinitionId( ConnectionUIConstants.CMD_PROPERTIES );
-            ActionUtils.activateActionHandler( propertyDialogAction );
-        }
-        else
-        {
-            actionBars.setGlobalActionHandler( ActionFactory.COPY.getId(), ( IAction ) connectionActionMap
-                .get( COPY_CONNECTION_ACTION ) );
-            actionBars.setGlobalActionHandler( ActionFactory.PASTE.getId(), ( IAction ) connectionActionMap
-                .get( PASTE_CONNECTION_ACTION ) );
-            actionBars.setGlobalActionHandler( ActionFactory.DELETE.getId(), ( IAction ) connectionActionMap
-                .get( DELETE_CONNECTION_ACTION ) );
-            actionBars.setGlobalActionHandler( ActionFactory.RENAME.getId(), ( IAction ) connectionActionMap
-                .get( RENAME_CONNECTION_ACTION ) );
-            actionBars.setGlobalActionHandler( ActionFactory.PROPERTIES.getId(), ( IAction ) connectionActionMap
-                .get( PROPERTY_DIALOG_ACTION ) );
-            actionBars.updateActionBars();
-        }
-    }
-
-
-    /**
-     * Deactivates the action handlers.
-     */
-    public void deactivateGlobalActionHandlers()
-    {
-        if ( actionBars == null )
-        {
-            IAction copyConnectionAction = connectionActionMap.get( COPY_CONNECTION_ACTION );
-            ActionUtils.deactivateActionHandler( copyConnectionAction );
-            IAction pasteConnectionAction = connectionActionMap.get( PASTE_CONNECTION_ACTION );
-            ActionUtils.deactivateActionHandler( pasteConnectionAction );
-            IAction deleteConnectionAction = connectionActionMap.get( DELETE_CONNECTION_ACTION );
-            ActionUtils.deactivateActionHandler( deleteConnectionAction );
-            IAction propertyDialogAction = connectionActionMap.get( PROPERTY_DIALOG_ACTION );
-            ActionUtils.deactivateActionHandler( propertyDialogAction );
-        }
-        else
-        {
-            actionBars.setGlobalActionHandler( ActionFactory.COPY.getId(), null );
-            actionBars.setGlobalActionHandler( ActionFactory.PASTE.getId(), null );
-            actionBars.setGlobalActionHandler( ActionFactory.DELETE.getId(), null );
-            actionBars.setGlobalActionHandler( ActionFactory.RENAME.getId(), null );
-            actionBars.setGlobalActionHandler( ActionFactory.PROPERTIES.getId(), null );
-            actionBars.updateActionBars();
-        }
-    }
+	/**
+	 * Deactivates the action handlers.
+	 */
+	public void deactivateGlobalActionHandlers() {
+		if (actionBars == null) {
+			IAction copyConnectionAction = connectionActionMap.get(COPY_CONNECTION_ACTION);
+			ActionUtils.deactivateActionHandler(copyConnectionAction);
+			IAction pasteConnectionAction = connectionActionMap.get(PASTE_CONNECTION_ACTION);
+			ActionUtils.deactivateActionHandler(pasteConnectionAction);
+			IAction deleteConnectionAction = connectionActionMap.get(DELETE_CONNECTION_ACTION);
+			ActionUtils.deactivateActionHandler(deleteConnectionAction);
+			IAction propertyDialogAction = connectionActionMap.get(PROPERTY_DIALOG_ACTION);
+			ActionUtils.deactivateActionHandler(propertyDialogAction);
+		} else {
+			actionBars.setGlobalActionHandler(ActionFactory.COPY.getId(), null);
+			actionBars.setGlobalActionHandler(ActionFactory.PASTE.getId(), null);
+			actionBars.setGlobalActionHandler(ActionFactory.DELETE.getId(), null);
+			actionBars.setGlobalActionHandler(ActionFactory.RENAME.getId(), null);
+			actionBars.setGlobalActionHandler(ActionFactory.PROPERTIES.getId(), null);
+			actionBars.updateActionBars();
+		}
+	}
 }

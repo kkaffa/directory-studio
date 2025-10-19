@@ -244,7 +244,7 @@ public class BrowserViewBot
 
     public PasswordModifyExtendedOperationDialogBot openPasswordModifyExtendedOperationDialog()
     {
-        ContextMenuHelper.clickContextMenu( browserBot.getTree(), "Extended Operations", "Password Modify..." );
+        ContextMenuHelper.clickContextMenu( browserBot.getTree(), "", "Password Modify..." );
         return new PasswordModifyExtendedOperationDialogBot();
     }
 

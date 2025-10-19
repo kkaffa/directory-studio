@@ -2112,7 +2112,7 @@ RFC 4511                         LDAPv3                        June 2006
    the 'supportedExtension' attribute in the root DSE (Section 5.1 of
    [RFC4512]).
 
-   Extended operations may be specified in other documents.  The
+    may be specified in other documents.  The
    specification of an Extended operation consists of:
 
    - the OBJECT IDENTIFIER assigned to the requestName,
@@ -2763,7 +2763,7 @@ RFC 4511                         LDAPv3                        June 2006
          that the server does not support the requested protocol
          version.
 
-         For Extended operations only, this code is also used to
+         For  only, this code is also used to
          indicate that the server does not support (by design or
          configuration) the Extended operation associated with the
          requestName.
@@ -3605,7 +3605,7 @@ C.1.25.  Section 4.11 (Abandon Operation)
 
 C.1.26.  Section 4.12 (Extended Operation)
 
-   - Specified how values of Extended operations defined in terms of
+   - Specified how values of  defined in terms of
      ASN.1 are to be encoded.
    - Added instructions on what Extended operation specifications
      consist of.
